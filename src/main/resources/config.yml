@@ -1,0 +1,16 @@
+messages:
+  afk-enabled: "&aВы вошли в режим AFK с текстом '&f<text>&a'"
+  afk-updated: "&aВы обновили режим AFK с текстом '&f<text>&a'"
+  afk-disabled: "&aВы вышли из режима АФК"
+  action-bar: "&cДвиньтесь, чтобы выйти с АФК"
+  default-afk-text: "&7AFK"
+  custom-text-too-long: "&cТекст не может быть длиннее 55 символов"
+  no-permission: "&cУ вас нет прав для использования этой команды"
+  config-reloaded: "&aКонфигурация перезагружена!"
+
+settings:
+  bubble-height-offset: 0.2
+  action-bar-interval: 10
+  sandclock-interval: 20
+  sandclock-emojis: "⏳,⌛"
+  sandclock-enabled: true

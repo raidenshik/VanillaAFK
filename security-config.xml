@@ -1,0 +1,7 @@
+<configuration>
+    <properties>
+        <secure.random.algorithm>SHA1PRNG</secure.random.algorithm>
+        <encryption.algorithm>AES/GCM/NoPadding</encryption.algorithm>
+        <key.size>256</key.size>
+    </properties>
+</configuration>

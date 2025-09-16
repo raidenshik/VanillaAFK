@@ -1,0 +1,19 @@
+name: VanillaAFK
+version: '1.0'
+main: com.rimzzy.vanillaAFK.VanillaAFK
+api-version: '1.21'
+authors: [ Rimzzy ]
+description: "AFK плагин с кастомными сообщениями и баблами над головой"
+
+commands:
+  afk:
+    description: "Войти/выйти из AFK режима или перезагрузить конфиг"
+    usage: "/afk [reload|текст]"
+
+permissions:
+  vanillaafk.customtext:
+    description: "Позволяет использовать кастомный текст для AFK"
+    default: op
+  vanillaafk.reload:
+    description: "Позволяет перезагружать конфигурацию плагина"
+    default: op
