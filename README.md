@@ -91,8 +91,10 @@ vanillaafk.reload - перезагрузка конфигурации
 
 Поддержка цветового форматирования bukkit и HEX цветов
 
-🐛 Поддержка
+## 🐛 Поддержка
 Если у вас возникли проблемы или предложения, создайте issue на GitHub.
+
+
 
 # VanillaAFK Plugin ENG GUIDE
 
@@ -194,5 +196,5 @@ Easy configuration reload
 
 Lightweight and optimized
 
-🐛 Support
+## 🐛 Support
 If you encounter any issues or have suggestions, please create an issue on GitHub.
