@@ -24,7 +24,6 @@ public class PlayerListener implements Listener {
     }
 
     private void startSchedulers() {
-        // Обновление позиции ArmorStand
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -36,7 +35,6 @@ public class PlayerListener implements Listener {
             }
         }.runTaskTimer(plugin, 0L, 5L);
 
-        // Обновление ActionBar
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -48,7 +46,6 @@ public class PlayerListener implements Listener {
             }
         }.runTaskTimer(plugin, 0L, configManager.getInt("settings.action-bar-interval"));
 
-        // Анимация песочных часов
         new BukkitRunnable() {
             @Override
             public void run() {

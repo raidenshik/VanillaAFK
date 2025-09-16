@@ -124,13 +124,11 @@ public class AFKManager {
         Location baseLocation = player.getLocation();
         double offset = configManager.getDouble("settings.bubble-height-offset");
 
-        // ArmorStand для текста AFK (нижний)
         Location textLocation = baseLocation.add(0, 2.2 + offset, 0);
         ArmorStand textArmorStand = createArmorStand(player, textLocation);
         textArmorStand.customName(message);
         textArmorStands.put(player.getUniqueId(), textArmorStand);
 
-        // ArmorStand для песочных часов (верхний) - только если включено в конфиге
         if (configManager.getBoolean("settings.sandclock-enabled")) {
             Location sandclockLocation = baseLocation.add(0, 0.4, 0); // Выше текста
             ArmorStand sandclockArmorStand = createArmorStand(player, sandclockLocation);
@@ -173,7 +171,6 @@ public class AFKManager {
         String emoji = emojis[nextState].trim();
         String rawMessage = rawMessages.get(playerId);
 
-        // Создаем текст с тем же цветом, что и основной текст
         Component sandclockMessage = parseMessage(rawMessage.replaceFirst("^(.*)$", emoji));
         armorStand.customName(sandclockMessage);
     }
@@ -196,14 +193,12 @@ public class AFKManager {
         Location baseLocation = player.getLocation();
         double offset = configManager.getDouble("settings.bubble-height-offset");
 
-        // Обновляем позицию текста
         ArmorStand textArmorStand = textArmorStands.get(player.getUniqueId());
         if (textArmorStand != null && !textArmorStand.isDead()) {
             Location textLocation = baseLocation.add(0, 2.2 + offset, 0);
             textArmorStand.teleport(textLocation);
         }
 
-        // Обновляем позицию песочных часов
         if (configManager.getBoolean("settings.sandclock-enabled")) {
             ArmorStand sandclockArmorStand = sandclockArmorStands.get(player.getUniqueId());
             if (sandclockArmorStand != null && !sandclockArmorStand.isDead()) {
