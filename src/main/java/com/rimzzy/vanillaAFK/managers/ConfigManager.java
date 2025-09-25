@@ -1,19 +1,39 @@
 package com.rimzzy.vanillaAFK.managers;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class ConfigManager {
 
     private final JavaPlugin plugin;
-    private final MiniMessage miniMessage;
+    private final BukkitAudiences adventure;
     private FileConfiguration config;
+
+    private final Cache<String, Component> messageCache;
+    private final Cache<String, String[]> listCache;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.miniMessage = MiniMessage.miniMessage();
+        this.adventure = BukkitAudiences.create(plugin);
+
+        this.messageCache = Caffeine.newBuilder()
+                .expireAfterAccess(10, TimeUnit.MINUTES)
+                .maximumSize(100)
+                .build();
+
+        this.listCache = Caffeine.newBuilder()
+                .expireAfterAccess(5, TimeUnit.MINUTES)
+                .maximumSize(50)
+                .build();
+
         loadConfig();
     }
 
@@ -30,7 +50,9 @@ public class ConfigManager {
         config.addDefault("messages.no-permission", "&cУ вас нет прав для использования этой команды");
         config.addDefault("messages.config-reloaded", "&aКонфигурация перезагружена!");
 
-        config.addDefault("settings.bubble-height-offset", 0.2);
+        // Раздельные настройки высоты для текста и песочных часов
+        config.addDefault("settings.text-height-offset", 2.2);    // Высота основного текста
+        config.addDefault("settings.sandclock-height-offset", 1.8); // Высота песочных часов (ниже текста)
         config.addDefault("settings.action-bar-interval", 10);
         config.addDefault("settings.sandclock-interval", 20);
         config.addDefault("settings.sandclock-emojis", "⏳,⌛");
@@ -38,50 +60,34 @@ public class ConfigManager {
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
+
+        messageCache.invalidateAll();
+        listCache.invalidateAll();
     }
 
     public Component getMessage(String path) {
+        return messageCache.get(path, this::loadMessage);
+    }
+
+    public Component getMessageWithText(String path, String plainText) {
+        String cacheKey = path + "|" + plainText;
+        return messageCache.get(cacheKey, k -> {
+            String message = config.getString(path, "");
+            return parseMessage(message.replace("<text>", plainText));
+        });
+    }
+
+    private Component loadMessage(String path) {
         String message = config.getString(path, "");
         return parseMessage(message);
     }
 
-    public Component getMessageWithText(String path, String plainText) {
-        String message = config.getString(path, "");
-        return parseMessage(message.replace("<text>", plainText));
-    }
-
     private Component parseMessage(String message) {
-        String miniMessageText = convertBukkitColorsToMiniMessage(message);
-        try {
-            return miniMessage.deserialize(miniMessageText);
-        } catch (Exception e) {
-            return Component.text(message);
+        if (message == null || message.isEmpty()) {
+            return Component.empty();
         }
-    }
 
-    private String convertBukkitColorsToMiniMessage(String text) {
-        return text.replace("&0", "<black>")
-                .replace("&1", "<dark_blue>")
-                .replace("&2", "<dark_green>")
-                .replace("&3", "<dark_aqua>")
-                .replace("&4", "<dark_red>")
-                .replace("&5", "<dark_purple>")
-                .replace("&6", "<gold>")
-                .replace("&7", "<gray>")
-                .replace("&8", "<dark_gray>")
-                .replace("&9", "<blue>")
-                .replace("&a", "<green>")
-                .replace("&b", "<aqua>")
-                .replace("&c", "<red>")
-                .replace("&d", "<light_purple>")
-                .replace("&e", "<yellow>")
-                .replace("&f", "<white>")
-                .replace("&k", "<obfuscated>")
-                .replace("&l", "<bold>")
-                .replace("&m", "<strikethrough>")
-                .replace("&n", "<underlined>")
-                .replace("&o", "<italic>")
-                .replace("&r", "<reset>");
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
     }
 
     public String getString(String path) {
@@ -101,11 +107,23 @@ public class ConfigManager {
     }
 
     public String[] getStringList(String path) {
-        return config.getString(path, "").split(",");
+        return listCache.get(path, k -> {
+            String value = config.getString(path, "");
+            return Arrays.stream(value.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+        });
+    }
+
+    public int getMaxCustomTextLength() {
+        return 55;
     }
 
     public void reloadConfig() {
         plugin.reloadConfig();
         config = plugin.getConfig();
+        messageCache.invalidateAll();
+        listCache.invalidateAll();
     }
 }

@@ -9,7 +9,8 @@ messages:
   config-reloaded: "&aКонфигурация перезагружена!"
 
 settings:
-  bubble-height-offset: 0.2
+  text-height-offset: 2.2
+  sandclock-height-offset: 1.8
   action-bar-interval: 10
   sandclock-interval: 20
   sandclock-emojis: "⏳,⌛"
