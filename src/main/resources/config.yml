@@ -1,17 +1,40 @@
+  # Messages config
 messages:
-  afk-enabled: "&aВы вошли в режим AFK с текстом '&f<text>&a'"
-  afk-updated: "&aВы обновили режим AFK с текстом '&f<text>&a'"
+  afk-enabled: "&aВы вошли в режим AFK"
+  afk-enabled-with-text: "&aВы вошли в режим AFK с текстом '&f<text>&a'"
+  afk-updated: "&aВы обновили режим AFK"
+  afk-updated-with-text: "&aВы обновили режим AFK с текстом '&f<text>&a'"
   afk-disabled: "&aВы вышли из режима АФК"
-  action-bar: "&cДвиньтесь, чтобы выйти с АФК"
-  default-afk-text: "&7AFK"
+  action-bar: "<red>Двиньтесь, чтобы выйти с АФК <white>| <gray>Вы в АФК: {time}"
+  default-afk-text: ""
   custom-text-too-long: "&cТекст не может быть длиннее 55 символов"
   no-permission: "&cУ вас нет прав для использования этой команды"
   config-reloaded: "&aКонфигурация перезагружена!"
+  
+  # Time formating ActionBar`a
+  afk-time-formats:
+    less-than-minute: "{seconds}сек"
+    less-than-hour: "{minutes}м {seconds}с"
+    hour-or-more: "{hours}ч {minutes}м {seconds}с"
 
+  # Main Settings
 settings:
   text-height-offset: 2.2
   sandclock-height-offset: 1.8
-  action-bar-interval: 10
+  text-scale: 1.0
+  
+  # Intervals (in ticks)
+  action-bar-interval: 20
   sandclock-interval: 20
+  
+  # Settings sandclock
   sandclock-emojis: "⏳,⌛"
   sandclock-enabled: true
+  
+  # Setting sound for AFK PLAYER
+  sound:
+    enabled: true
+    sound: "minecraft:entity.cat.ambient"
+    volume: 1.0
+    pitch: 1.0
+    interval: 100 # 20 ticks = 1 second

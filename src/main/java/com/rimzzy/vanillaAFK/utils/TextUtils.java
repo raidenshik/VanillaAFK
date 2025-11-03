@@ -2,13 +2,14 @@ package com.rimzzy.vanillaAFK.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class TextUtils {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     public static String removeColorCodes(String text) {
-        return text.replaceAll("&[0-9a-fk-or]", "");
+        return text.replaceAll("&[0-9a-fk-or]", "").replaceAll("<[^>]*>", "");
     }
 
     public static Component parseFormattedText(String text) {
@@ -16,7 +17,17 @@ public class TextUtils {
             return Component.empty();
         }
 
-        String miniMessageText = text.replace("&0", "<black>")
+        try {
+            String miniMessageText = convertLegacyToMiniMessage(text);
+            return MINI_MESSAGE.deserialize(miniMessageText);
+        } catch (Exception e) {
+            // Fallback
+            return LegacyComponentSerializer.legacyAmpersand().deserialize(text);
+        }
+    }
+
+    private static String convertLegacyToMiniMessage(String text) {
+        return text.replace("&0", "<black>")
                 .replace("&1", "<dark_blue>")
                 .replace("&2", "<dark_green>")
                 .replace("&3", "<dark_aqua>")
@@ -38,11 +49,5 @@ public class TextUtils {
                 .replace("&n", "<underlined>")
                 .replace("&o", "<italic>")
                 .replace("&r", "<reset>");
-
-        try {
-            return MINI_MESSAGE.deserialize(miniMessageText);
-        } catch (Exception e) {
-            return MINI_MESSAGE.deserialize("<white>" + text);
-        }
     }
 }

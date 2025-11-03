@@ -1,10 +1,10 @@
+// ConfigManager.java - обновленный класс
 package com.rimzzy.vanillaAFK.managers;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import com.rimzzy.vanillaAFK.utils.TextUtils;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 public class ConfigManager {
 
     private final JavaPlugin plugin;
-    private final BukkitAudiences adventure;
     private FileConfiguration config;
 
     private final Cache<String, Component> messageCache;
@@ -22,7 +21,6 @@ public class ConfigManager {
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.adventure = BukkitAudiences.create(plugin);
 
         this.messageCache = Caffeine.newBuilder()
                 .expireAfterAccess(10, TimeUnit.MINUTES)
@@ -44,19 +42,27 @@ public class ConfigManager {
         config.addDefault("messages.afk-enabled", "&aВы вошли в режим AFK с текстом '&f<text>&a'");
         config.addDefault("messages.afk-updated", "&aВы обновили режим AFK с текстом '&f<text>&a'");
         config.addDefault("messages.afk-disabled", "&aВы вышли из режима АФК");
-        config.addDefault("messages.action-bar", "&cДвиньтесь, чтобы выйти с АФК");
+        config.addDefault("messages.action-bar", "<red>Двиньтесь, чтобы выйти с АФК <white>| <gray>Вы в АФК: {time}");
         config.addDefault("messages.default-afk-text", "&7AFK");
         config.addDefault("messages.custom-text-too-long", "&cТекст не может быть длиннее 55 символов");
         config.addDefault("messages.no-permission", "&cУ вас нет прав для использования этой команды");
         config.addDefault("messages.config-reloaded", "&aКонфигурация перезагружена!");
+        config.addDefault("messages.afk-time-formats.less-than-minute", "{seconds}сек");
+        config.addDefault("messages.afk-time-formats.less-than-hour", "{minutes}м {seconds}с");
+        config.addDefault("messages.afk-time-formats.hour-or-more", "{hours}ч {minutes}м {seconds}с");
 
-        // Раздельные настройки высоты для текста и песочных часов
-        config.addDefault("settings.text-height-offset", 2.2);    // Высота основного текста
-        config.addDefault("settings.sandclock-height-offset", 1.8); // Высота песочных часов (ниже текста)
+        config.addDefault("settings.text-height-offset", 2.2);
+        config.addDefault("settings.sandclock-height-offset", 1.8);
+        config.addDefault("settings.text-scale", 1.0);
         config.addDefault("settings.action-bar-interval", 10);
         config.addDefault("settings.sandclock-interval", 20);
         config.addDefault("settings.sandclock-emojis", "⏳,⌛");
         config.addDefault("settings.sandclock-enabled", true);
+        config.addDefault("settings.sound.enabled", true);
+        config.addDefault("settings.sound.sound", "minecraft:entity.cat.ambient");
+        config.addDefault("settings.sound.volume", 1.0);
+        config.addDefault("settings.sound.pitch", 1.0);
+        config.addDefault("settings.sound.interval", 100);
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
@@ -69,33 +75,38 @@ public class ConfigManager {
         return messageCache.get(path, this::loadMessage);
     }
 
-    public Component getMessageWithText(String path, String plainText) {
-        String cacheKey = path + "|" + plainText;
+    public Component getMessageWithText(String path, String text) {
+        if (path.equals("messages.afk-enabled") || path.equals("messages.afk-updated")) {
+            return getMessage(path);
+        }
+
+        String cacheKey = path + "|" + text;
         return messageCache.get(cacheKey, k -> {
             String message = config.getString(path, "");
-            return parseMessage(message.replace("<text>", plainText));
+            String formattedMessage = message.replace("<text>", text);
+            return TextUtils.parseFormattedText(formattedMessage);
         });
     }
 
     private Component loadMessage(String path) {
         String message = config.getString(path, "");
-        return parseMessage(message);
-    }
-
-    private Component parseMessage(String message) {
-        if (message == null || message.isEmpty()) {
-            return Component.empty();
-        }
-
-        return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
+        return TextUtils.parseFormattedText(message);
     }
 
     public String getString(String path) {
         return config.getString(path, "");
     }
 
+    public String getString(String path, String defaultValue) {
+        return config.getString(path, defaultValue);
+    }
+
     public double getDouble(String path) {
         return config.getDouble(path);
+    }
+
+    public double getDouble(String path, double defaultValue) {
+        return config.getDouble(path, defaultValue);
     }
 
     public int getInt(String path) {

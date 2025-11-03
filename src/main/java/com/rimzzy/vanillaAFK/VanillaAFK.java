@@ -26,8 +26,6 @@ public final class VanillaAFK extends JavaPlugin {
         getServer().getPluginManager().registerEvents(
                 new OptimizedPlayerListener(afkManager, configManager, this), this
         );
-
-        getLogger().info("VanillaAFK успешно запущен!");
     }
 
     @Override

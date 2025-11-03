@@ -1,7 +1,9 @@
+// Обновленный OptimizedPlayerListener.java
 package com.rimzzy.vanillaAFK.listeners;
 
 import com.rimzzy.vanillaAFK.managers.AFKManager;
 import com.rimzzy.vanillaAFK.managers.ConfigManager;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,6 +21,7 @@ public class OptimizedPlayerListener implements Listener {
     private final ConfigManager configManager;
     private final com.rimzzy.vanillaAFK.VanillaAFK plugin;
     private int tickCounter = 0;
+    private int soundTickCounter = 0;
 
     public OptimizedPlayerListener(AFKManager afkManager, ConfigManager configManager, com.rimzzy.vanillaAFK.VanillaAFK plugin) {
         this.afkManager = afkManager;
@@ -32,6 +35,7 @@ public class OptimizedPlayerListener implements Listener {
             @Override
             public void run() {
                 tickCounter++;
+                soundTickCounter++;
                 List<Player> afkPlayers = getOnlineAFKPlayers();
 
                 for (Player player : afkPlayers) {
@@ -39,7 +43,7 @@ public class OptimizedPlayerListener implements Listener {
                         afkManager.updateDisplayPositions(player);
                     }
 
-                    if (tickCounter % configManager.getInt("settings.action-bar-interval") == 0) {
+                    if (tickCounter % 20 == 0) {
                         afkManager.updateActionBar(player);
                     }
 
@@ -48,8 +52,19 @@ public class OptimizedPlayerListener implements Listener {
                     }
                 }
 
+                int soundInterval = afkManager.getSoundInterval();
+                if (soundInterval > 0 && soundTickCounter % soundInterval == 0) {
+                    for (Player player : afkPlayers) {
+                        afkManager.playAFKSound(player);
+                    }
+                }
+
                 if (tickCounter >= 100) {
                     tickCounter = 0;
+                }
+
+                if (soundTickCounter >= 2400) { // 2 минуты максимум для звукового счетчика
+                    soundTickCounter = 0;
                 }
             }
         }.runTaskTimer(plugin, 1L, 1L);
@@ -68,15 +83,21 @@ public class OptimizedPlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
-                event.getFrom().getBlockY() == event.getTo().getBlockY() &&
-                event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+        Player player = event.getPlayer();
+
+        if (!afkManager.isAFK(player)) {
             return;
         }
 
-        Player player = event.getPlayer();
+        Location from = event.getFrom();
+        Location to = event.getTo();
 
-        if (afkManager.isAFK(player) && afkManager.hasMoved(player)) {
+        boolean hasMoved = Math.abs(from.getX() - to.getX()) > 0.000001 ||
+                Math.abs(from.getY() - to.getY()) > 0.000001 ||
+                Math.abs(from.getZ() - to.getZ()) > 0.000001 ||
+                from.getWorld() != to.getWorld();
+
+        if (hasMoved) {
             afkManager.removeAFK(player);
         }
     }

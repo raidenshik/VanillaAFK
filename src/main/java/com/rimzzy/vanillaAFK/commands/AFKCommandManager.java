@@ -12,10 +12,12 @@ public class AFKCommandManager {
 
     private final PaperCommandManager commandManager;
     private final AFKCommands afkCommands;
+    private final AFKReload afkReloadCommand;
 
     public AFKCommandManager(AFKManager afkManager, ConfigManager configManager, BukkitAudiences adventure) {
         this.commandManager = new PaperCommandManager((JavaPlugin) afkManager.getPlugin());
         this.afkCommands = new AFKCommands(afkManager, configManager, adventure);
+        this.afkReloadCommand = new AFKReload(configManager, adventure);
 
         configureCommandManager();
     }
@@ -23,9 +25,9 @@ public class AFKCommandManager {
     private void configureCommandManager() {
         commandManager.getCommandCompletions().registerCompletion("afkcommands", c -> {
             if (c.getPlayer().hasPermission("vanillaafk.reload")) {
-                return List.of(new String[]{"текст", "reload"});
+                return List.of("<текст>");
             }
-            return List.of(new String[]{"текст"});
+            return List.of("<текст>");
         });
 
         commandManager.usePerIssuerLocale(true);
@@ -33,6 +35,7 @@ public class AFKCommandManager {
 
     public void registerCommands() {
         commandManager.registerCommand(afkCommands);
+        commandManager.registerCommand(afkReloadCommand);
 
         commandManager.getCommandContexts().registerContext(String.class, context ->
                 String.join(" ", context.getArgs())

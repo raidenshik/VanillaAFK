@@ -1,5 +1,6 @@
 package com.rimzzy.vanillaAFK.commands;
 
+import com.rimzzy.vanillaAFK.utils.TextUtils;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import com.rimzzy.vanillaAFK.managers.AFKManager;
@@ -24,35 +25,31 @@ public class AFKCommands extends BaseCommand {
 
     @Default
     @Description("Войти/выйти из AFK режима")
+    @CommandCompletion("@nothing")
     public void onAFK(Player player) {
         if (afkManager.isAFK(player)) {
             afkManager.removeAFK(player);
-            sendMessage(player, "messages.afk-disabled");
         } else {
             afkManager.setAFK(player, null);
         }
     }
 
-    @Subcommand("текст")
-    @CommandPermission("vanillaafk.customtext")
+    @Default
+    @CommandCompletion("<текст>")
     @Description("Войти в AFK с кастомным текстом")
-    @Syntax("<текст>")
     public void onAFKText(Player player, String text) {
-        String plainText = removeColorCodes(text);
+        String plainText = TextUtils.removeColorCodes(text);
         if (plainText.length() > configManager.getMaxCustomTextLength()) {
             sendMessage(player, "messages.custom-text-too-long");
             return;
         }
 
-        afkManager.setAFK(player, text);
-    }
+        if (!player.hasPermission("vanillaafk.customtext")) {
+            sendMessage(player, "messages.no-permission");
+            return;
+        }
 
-    @Subcommand("reload")
-    @CommandPermission("vanillaafk.reload")
-    @Description("Перезагрузить конфигурацию")
-    public void onReload(Player player) {
-        configManager.reloadConfig();
-        sendMessage(player, "messages.config-reloaded");
+        afkManager.setAFK(player, text);
     }
 
     private void sendMessage(Player player, String messageKey) {
