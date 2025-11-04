@@ -63,7 +63,7 @@ public class ConfigManager {
         config.addDefault("settings.sandclock-emojis", "⏳,⌛");
         config.addDefault("settings.sandclock-enabled", true);
         config.addDefault("settings.sound.enabled", true);
-        config.addDefault("settings.sound.sound", "minecraft:entity.cat.ambient");
+        config.addDefault("settings.sound.sound", "minecraft:minecraft:block.sand.step");
         config.addDefault("settings.sound.volume", 1.0);
         config.addDefault("settings.sound.pitch", 1.0);
         config.addDefault("settings.sound.interval", 100);

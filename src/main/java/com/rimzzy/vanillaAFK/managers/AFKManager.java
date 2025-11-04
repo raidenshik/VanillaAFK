@@ -6,6 +6,8 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.World;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -98,13 +100,13 @@ public class AFKManager {
         double sandclockOffset = configManager.getDouble("settings.sandclock-height-offset");
 
         TextDisplay textDisplay = createTextDisplay(player,
-                baseLocation.clone().add(0, textOffset, 0));
+                baseLocation.clone().add(0, textOffset, 0), plugin);
         textDisplay.text(data.getMessage());
         data.setTextDisplay(textDisplay);
 
         if (configManager.getBoolean("settings.sandclock-enabled")) {
             TextDisplay sandclockDisplay = createTextDisplay(player,
-                    baseLocation.clone().add(0, sandclockOffset, 0));
+                    baseLocation.clone().add(0, sandclockOffset, 0), plugin);
 
             String[] emojis = configManager.getStringList("settings.sandclock-emojis");
             if (emojis.length > 0) {
@@ -152,10 +154,11 @@ public class AFKManager {
         return formatting.toString() + emoji;
     }
 
-    private TextDisplay createTextDisplay(Player player, Location location) {
-        TextDisplay display = player.getWorld().spawn(location, TextDisplay.class);
+    private TextDisplay createTextDisplay(Player player, Location location, JavaPlugin plugin) {
+        World world = player.getWorld();
+        TextDisplay display = world.spawn(location, TextDisplay.class);
 
-        display.setBillboard(org.bukkit.entity.Display.Billboard.CENTER);
+        display.setBillboard(Display.Billboard.CENTER);
         display.setAlignment(TextDisplay.TextAlignment.CENTER);
         display.setSeeThrough(false);
         display.setShadowed(true);
@@ -167,12 +170,37 @@ public class AFKManager {
         display.setShadowStrength(1.0f);
         display.setLineWidth(1000);
 
-        float textScale = (float) configManager.getDouble("settings.text-scale", 1.0);
+        float targetScale = configManager.getFloat("settings.text-scale");
+        float startScale = configManager.getFloat("settings.text-startscale");
+        int interpolationTicks = configManager.getInt("settings.scale-interpolation");
+        int interpolationDelay = configManager.getInt("settings.scale-interpolation-delay");
+        long runTaskLaterDelay = configManager.getLong("settings.scale-run-task-later-delay");
+
+        display.setInterpolationDuration(interpolationTicks);
+        display.setInterpolationDelay(interpolationDelay);
+
         Transformation transformation = display.getTransformation();
-        transformation.getScale().set(new Vector3f(textScale, textScale, textScale));
+        transformation.getScale().set(new Vector3f(startScale, startScale, startScale));
         display.setTransformation(transformation);
 
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Transformation t = display.getTransformation();
+            t.getScale().set(new Vector3f(targetScale, targetScale, targetScale));
+            display.setTransformation(t);
+        }, runTaskLaterDelay);
+
         return display;
+    }
+
+    private void shrinkTextDisplay(TextDisplay display, int interpolationTicks) {
+        display.setInterpolationDuration(interpolationTicks);
+        display.setInterpolationDelay(0);
+
+        Transformation transformation = display.getTransformation();
+        transformation.getScale().set(new Vector3f(0, 0, 0));
+        display.setTransformation(transformation);
+
+        Bukkit.getScheduler().runTaskLater(plugin, display::remove, interpolationTicks);
     }
 
     private void updateSandclockText(AFKPlayerData data) {
@@ -211,15 +239,20 @@ public class AFKManager {
     }
 
     private void removePlayerDisplays(AFKPlayerData data) {
-        if (data.getTextDisplay() != null) {
-            if (!data.getTextDisplay().isDead()) {
-                data.getTextDisplay().remove();
+        TextDisplay textDisplay = data.getTextDisplay();
+        TextDisplay sandclockDisplay = data.getSandclockDisplay();
+
+        int interpolationTicks = configManager.getInt("settings.scale-interpolation");
+
+        if (textDisplay != null) {
+            if (!textDisplay.isDead()) {
+                shrinkTextDisplay(textDisplay, interpolationTicks);
             }
             data.setTextDisplay(null);
         }
-        if (data.getSandclockDisplay() != null) {
-            if (!data.getSandclockDisplay().isDead()) {
-                data.getSandclockDisplay().remove();
+        if (sandclockDisplay != null) {
+            if (!sandclockDisplay.isDead()) {
+                shrinkTextDisplay(sandclockDisplay, interpolationTicks);
             }
             data.setSandclockDisplay(null);
         }
