@@ -408,7 +408,10 @@ public class AFKManager {
         if (data != null) {
             afkTeam.removeEntry(player.getName());
             removePlayerDisplays(data);
-            player.sendActionBar(Component.text(" "));
+            if (configManager.getBoolean("settings.fast-actionbar-removing")) {
+                player.sendActionBar(Component.text(" "));
+            }
+
             if (sendMessage) {
                 sendMessage(player, "messages.afk-disabled");
             }

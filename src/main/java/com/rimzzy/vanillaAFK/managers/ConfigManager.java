@@ -60,6 +60,7 @@ public class ConfigManager {
         config.addDefault("settings.scale-interpolation", 5);
         config.addDefault("settings.scale-interpolation-delay", 0);
         config.addDefault("settings.scale-run-task-later-delay", 2L);
+        config.addDefault("settings.fast-actionbar-removing", false);
         config.addDefault("settings.sandclock-emojis", "⏳,⌛");
         config.addDefault("settings.sandclock-enabled", true);
         config.addDefault("settings.sound.enabled", true);
