@@ -66,10 +66,11 @@ public class ConfigManager {
         config.addDefault("settings.sound.sound", "minecraft:minecraft:block.sand.step");
         config.addDefault("settings.sound.volume", 1.0);
         config.addDefault("settings.sound.pitch", 1.0);
-        config.addDefault("settings.sound.interval", 100);
+        config.addDefault("settings.sound.interval", 20);
 
         config.addDefault("permissions.reload", "vanillaafk.reload");
         config.addDefault("permissions.customtext", "vanillaafk.customtext");
+        config.addDefault("permissions.use", "vanillaafk.use");
 
         config.options().copyDefaults(true);
         plugin.saveConfig();

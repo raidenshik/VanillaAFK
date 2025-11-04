@@ -10,7 +10,6 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 @CommandAlias("afk")
-@CommandPermission("vanillaafk.use")
 public class AFKCommands extends BaseCommand {
 
     private final AFKManager afkManager;
@@ -27,6 +26,11 @@ public class AFKCommands extends BaseCommand {
     @Description("Войти/выйти из AFK режима")
     @CommandCompletion("@nothing")
     public void onAFK(Player player) {
+        if (!player.hasPermission(configManager.getString("permissions.use"))) {
+            player.sendMessage("Нет прав! Обратитесь к Администратору!");
+            return;
+        }
+
         if (afkManager.isAFK(player)) {
             afkManager.removeAFK(player);
         } else {
