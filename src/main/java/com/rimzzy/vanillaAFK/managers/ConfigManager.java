@@ -51,11 +51,15 @@ public class ConfigManager {
         config.addDefault("messages.afk-time-formats.less-than-hour", "{minutes}м {seconds}с");
         config.addDefault("messages.afk-time-formats.hour-or-more", "{hours}ч {minutes}м {seconds}с");
 
-        config.addDefault("settings.text-height-offset", 2.2);
-        config.addDefault("settings.sandclock-height-offset", 1.8);
+        config.addDefault("settings.text-height-offset", 2.3);
+        config.addDefault("settings.sandclock-height-offset", 2.0);
         config.addDefault("settings.text-scale", 1.0);
+        config.addDefault("settings.text-startscale", 0.5f);
         config.addDefault("settings.action-bar-interval", 10);
         config.addDefault("settings.sandclock-interval", 20);
+        config.addDefault("settings.scale-interpolation", 5);
+        config.addDefault("settings.scale-interpolation-delay", 0);
+        config.addDefault("settings.scale-run-task-later-delay", 2L);
         config.addDefault("settings.sandclock-emojis", "⏳,⌛");
         config.addDefault("settings.sandclock-enabled", true);
         config.addDefault("settings.sound.enabled", true);
@@ -97,20 +101,20 @@ public class ConfigManager {
         return config.getString(path, "");
     }
 
-    public String getString(String path, String defaultValue) {
-        return config.getString(path, defaultValue);
-    }
-
     public double getDouble(String path) {
         return config.getDouble(path);
     }
 
-    public double getDouble(String path, double defaultValue) {
-        return config.getDouble(path, defaultValue);
-    }
-
     public int getInt(String path) {
         return config.getInt(path);
+    }
+
+    public long getLong(String path) {
+        return config.getLong(path);
+    }
+
+    public float getFloat(String path) {
+        return (float) config.getDouble(path);
     }
 
     public boolean getBoolean(String path) {
