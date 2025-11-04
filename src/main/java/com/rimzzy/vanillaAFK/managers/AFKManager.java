@@ -70,7 +70,7 @@ public class AFKManager {
                 data.getTextDisplay().text(message);
             }
 
-            if (player.hasPermission("vanillaafk.customtext") && customMessage != null && !customMessage.isEmpty()) {
+            if (player.hasPermission(configManager.getString("permissions.customtext")) && customMessage != null && !customMessage.isEmpty()) {
                 sendMessage(player, "messages.afk-updated-with-text", rawMessage);
             } else {
                 sendMessage(player, "messages.afk-updated");
@@ -83,7 +83,7 @@ public class AFKManager {
             createAllPlayerDisplays(player, data);
             data.setAfkStartTime(System.currentTimeMillis());
 
-            if (player.hasPermission("vanillaafk.customtext") && customMessage != null && !customMessage.isEmpty()) {
+            if (player.hasPermission(configManager.getString("permissions.customtext")) && customMessage != null && !customMessage.isEmpty()) {
                 sendMessage(player, "messages.afk-enabled-with-text", rawMessage);
             } else {
                 sendMessage(player, "messages.afk-enabled");

@@ -13,18 +13,20 @@ public class AFKCommandManager {
     private final PaperCommandManager commandManager;
     private final AFKCommands afkCommands;
     private final AFKReload afkReloadCommand;
+    private final ConfigManager configManager;
 
     public AFKCommandManager(AFKManager afkManager, ConfigManager configManager, BukkitAudiences adventure) {
         this.commandManager = new PaperCommandManager((JavaPlugin) afkManager.getPlugin());
         this.afkCommands = new AFKCommands(afkManager, configManager, adventure);
         this.afkReloadCommand = new AFKReload(configManager, adventure);
+        this.configManager = configManager;
 
         configureCommandManager();
     }
 
     private void configureCommandManager() {
         commandManager.getCommandCompletions().registerCompletion("afkcommands", c -> {
-            if (c.getPlayer().hasPermission("vanillaafk.reload")) {
+            if (c.getPlayer().hasPermission(configManager.getString("permissions.reload"))) {
                 return List.of("<текст>");
             }
             return List.of("<текст>");

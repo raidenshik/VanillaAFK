@@ -68,6 +68,9 @@ public class ConfigManager {
         config.addDefault("settings.sound.pitch", 1.0);
         config.addDefault("settings.sound.interval", 100);
 
+        config.addDefault("permissions.reload", "vanillaafk.reload");
+        config.addDefault("permissions.customtext", "vanillaafk.customtext");
+
         config.options().copyDefaults(true);
         plugin.saveConfig();
 
