@@ -92,9 +92,9 @@ public class OptimizedPlayerListener implements Listener {
         Location from = event.getFrom();
         Location to = event.getTo();
 
-        boolean hasMoved = Math.abs(from.getX() - to.getX()) > 0.000001 ||
-                Math.abs(from.getY() - to.getY()) > 0.000001 ||
-                Math.abs(from.getZ() - to.getZ()) > 0.000001 ||
+        boolean hasMoved = Math.abs(from.getX() - to.getX()) > 1e-8f ||
+                Math.abs(from.getY() - to.getY()) > 1e-8f ||
+                Math.abs(from.getZ() - to.getZ()) > 1e-8f ||
                 from.getWorld() != to.getWorld();
 
         if (hasMoved) {
