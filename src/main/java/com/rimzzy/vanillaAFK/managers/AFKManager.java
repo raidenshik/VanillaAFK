@@ -371,7 +371,9 @@ public class AFKManager {
         for (AFKPlayerData data : afkPlayers.values()) {
             Player player = Bukkit.getPlayer(data.getPlayerId());
             if (player != null) {
-                afkTeam.removeEntry(player.getName());
+                if (afkTeam.hasEntry(player.getName())) {
+                    afkTeam.removeEntry(player.getName());
+                }
             }
             removePlayerDisplays(data);
         }
@@ -406,7 +408,9 @@ public class AFKManager {
     private void removeAFK(Player player, boolean sendMessage) {
         AFKPlayerData data = afkPlayers.remove(player.getUniqueId());
         if (data != null) {
-            afkTeam.removeEntry(player.getName());
+            if (afkTeam.hasEntry(player.getName())) {
+                afkTeam.removeEntry(player.getName());
+            }
             removePlayerDisplays(data);
             if (configManager.getBoolean("settings.fast-actionbar-removing")) {
                 player.sendActionBar(Component.text(" "));
