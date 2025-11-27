@@ -31,56 +31,6 @@ messages:
   default-afk-text: "&7AFK"
 ```
 
-## 🎨 Форматирование текста
-
-Поддерживаются стандартные цветовые коды Minecraft:
-
-### Цвета:
-&0 - черный
-
-&1 - темно-синий
-
-&2 - темно-зеленый
-
-&3 - темно-бирюзовый
-
-&4 - темно-красный
-
-&5 - пурпурный
-
-&6 - золотой
-
-&7 - серый
-
-&8 - темно-серый
-
-&9 - синий
-
-&a - зеленый
-
-&b - бирюзовый
-
-&c - красный
-
-&d - розовый
-
-&e - желтый
-
-&f - белый
-
-### Форматирование:
-&k - случайные символы
-
-&l - жирный
-
-&m - зачеркнутый
-
-&n - подчеркнутый
-
-&o - курсив
-
-&r - сброс форматирования
-
 ## 🔐 Разрешения
 vanillaafk.customtext - использование кастомного текста
 
@@ -128,55 +78,6 @@ messages:
   afk-disabled: "&aYou exited AFK mode"
   default-afk-text: "&7AFK"
 ```
-
-## 🎨 Text Formatting
-Supports standard Minecraft color codes:
-
-### Colors:
-&0 - Black
-
-&1 - Dark Blue
-
-&2 - Dark Green
-
-&3 - Dark Aqua
-
-&4 - Dark Red
-
-&5 - Purple
-
-&6 - Gold
-
-&7 - Gray
-
-&8 - Dark Gray
-
-&9 - Blue
-
-&a - Green
-
-&b - Aqua
-
-&c - Red
-
-&d - Pink
-
-&e - Yellow
-
-&f - White
-
-### Formatting:
-&k - Obfuscated
-
-&l - Bold
-
-&m - Strikethrough
-
-&n - Underlined
-
-&o - Italic
-
-&r - Reset
 
 ## 🔐 Permissions
 vanillaafk.customtext - use custom AFK text
