@@ -5,6 +5,8 @@ import com.rimzzy.vanillaAFK.listeners.OptimizedPlayerListener;
 import com.rimzzy.vanillaAFK.managers.AFKManager;
 import com.rimzzy.vanillaAFK.managers.ConfigManager;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class VanillaAFK extends JavaPlugin {
@@ -13,12 +15,14 @@ public final class VanillaAFK extends JavaPlugin {
     private AFKManager afkManager;
     private ConfigManager configManager;
     private AFKCommandManager commandManager;
+    private LuckPerms luckPerms;
 
     @Override
     public void onEnable() {
+        this.luckPerms = LuckPermsProvider.get();
         this.adventure = BukkitAudiences.create(this);
         this.configManager = new ConfigManager(this);
-        this.afkManager = new AFKManager(this, configManager, adventure);
+        this.afkManager = new AFKManager(this, configManager, adventure, luckPerms);
         this.commandManager = new AFKCommandManager(afkManager, configManager, adventure);
 
         commandManager.registerCommands();
@@ -36,9 +40,5 @@ public final class VanillaAFK extends JavaPlugin {
         if (adventure != null) {
             adventure.close();
         }
-    }
-
-    public BukkitAudiences getAdventure() {
-        return adventure;
     }
 }

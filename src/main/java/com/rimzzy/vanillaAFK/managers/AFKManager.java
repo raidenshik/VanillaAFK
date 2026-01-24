@@ -3,6 +3,8 @@ package com.rimzzy.vanillaAFK.managers;
 import com.rimzzy.vanillaAFK.utils.TextUtils;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -11,8 +13,6 @@ import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Transformation;
 import org.joml.Vector3f;
 
@@ -24,26 +24,35 @@ public class AFKManager {
     private final JavaPlugin plugin;
     private final ConfigManager configManager;
     private final BukkitAudiences adventure;
+    private final LuckPerms luckPerms;
     private final Map<UUID, AFKPlayerData> afkPlayers;
-    private Team afkTeam;
 
-    public AFKManager(JavaPlugin plugin, ConfigManager configManager, BukkitAudiences adventure) {
+    public AFKManager(JavaPlugin plugin, ConfigManager configManager, BukkitAudiences adventure, LuckPerms luckPerms) {
         this.plugin = plugin;
         this.configManager = configManager;
         this.adventure = adventure;
+        this.luckPerms = luckPerms;
         this.afkPlayers = new ConcurrentHashMap<>();
-        setupAFKTeam();
+        setupAFKGroup();
     }
 
-    private void setupAFKTeam() {
-        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-        afkTeam = scoreboard.getTeam("vanillaafk");
-
-        if (afkTeam == null) {
-            afkTeam = scoreboard.registerNewTeam("vanillaafk");
-        }
-
-        afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
+    private void setupAFKGroup() {
+        luckPerms.getGroupManager().loadGroup("afk").thenAcceptAsync(group -> {
+            plugin.getLogger().info(group.toString());
+            if (group.isEmpty()) {
+                luckPerms.getGroupManager().createAndLoadGroup("afk").thenAccept(createdGroup -> {
+                    plugin.getLogger().info("Группа 'afk' создана.");
+                }).exceptionally(throwable -> {
+                    plugin.getLogger().warning("Не удалось создать группу 'afk': " + throwable.getMessage());
+                    return null;
+                });
+            } else {
+                plugin.getLogger().info("Группа 'afk' уже существует.");
+            }
+        }).exceptionally(throwable -> {
+            plugin.getLogger().warning("Ошибка при проверке группы 'afk': " + throwable.getMessage());
+            return null;
+        });
     }
 
     public boolean setAFK(Player player, String customMessage) {
@@ -78,7 +87,8 @@ public class AFKManager {
         } else {
             AFKPlayerData data = new AFKPlayerData(message, rawMessage, player.getLocation());
             afkPlayers.put(playerId, data);
-            afkTeam.addEntry(player.getName());
+
+            addToAFKGroup(playerId);
 
             createAllPlayerDisplays(player, data);
             data.setAfkStartTime(System.currentTimeMillis());
@@ -92,6 +102,26 @@ public class AFKManager {
 
         player.sendActionBar(getAFKTimeComponent(player));
         return wasAFK;
+    }
+
+    private void addToAFKGroup(UUID playerId) {
+        luckPerms.getUserManager().loadUser(playerId).thenAcceptAsync(user -> {
+            if (user != null) {
+                user.data().add(Node.builder("group.afk").build());
+                luckPerms.getUserManager().saveUser(user);
+                luckPerms.getUserManager().cleanupUser(user);
+            }
+        });
+    }
+
+    private void removeFromAFKGroup(UUID playerId) {
+        luckPerms.getUserManager().loadUser(playerId).thenAcceptAsync(user -> {
+            if (user != null) {
+                user.data().remove(Node.builder("group.afk").build());
+                luckPerms.getUserManager().saveUser(user);
+                luckPerms.getUserManager().cleanupUser(user);
+            }
+        });
     }
 
     private void createAllPlayerDisplays(Player player, AFKPlayerData data) {
@@ -128,18 +158,16 @@ public class AFKManager {
         }
         StringBuilder formatting = new StringBuilder();
 
-        // Ищем все & коды в оригинальном тексте
         for (int i = 0; i < originalText.length() - 1; i++) {
             if (originalText.charAt(i) == '&') {
                 char code = originalText.charAt(i + 1);
                 if ("0123456789abcdefklmnor".indexOf(code) != -1) {
                     formatting.append("&").append(code);
-                    i++; // Пропускаем следующий символ
+                    i++;
                 }
             }
         }
 
-        // Ищем все MiniMessage теги в оригинальном тексте
         String[] miniMessageTags = {"<black>", "<dark_blue>", "<dark_green>", "<dark_aqua>", "<dark_red>",
                 "<dark_purple>", "<gold>", "<gray>", "<dark_gray>", "<blue>", "<green>",
                 "<aqua>", "<red>", "<light_purple>", "<yellow>", "<white>", "<obfuscated>",
@@ -151,7 +179,7 @@ public class AFKManager {
             }
         }
 
-        return formatting.toString() + emoji;
+        return formatting + emoji;
     }
 
     private TextDisplay createTextDisplay(Player player, Location location, JavaPlugin plugin) {
@@ -352,11 +380,6 @@ public class AFKManager {
                 originalLocation.getWorld() != currentLocation.getWorld();
     }
 
-    public String getRawAFKMessage(Player player) {
-        AFKPlayerData data = afkPlayers.get(player.getUniqueId());
-        return data != null ? data.getRawMessage() : "";
-    }
-
     private void sendMessage(Player player, String messageKey, String text) {
         Component message = configManager.getMessageWithText(messageKey, text);
         adventure.player(player).sendMessage(message);
@@ -371,18 +394,12 @@ public class AFKManager {
         for (AFKPlayerData data : afkPlayers.values()) {
             Player player = Bukkit.getPlayer(data.getPlayerId());
             if (player != null) {
-                if (afkTeam.hasEntry(player.getName())) {
-                    afkTeam.removeEntry(player.getName());
-                }
+                removeFromAFKGroup(player.getUniqueId());
             }
             removePlayerDisplays(data);
         }
 
         afkPlayers.clear();
-
-        if (afkTeam != null && afkTeam.getEntries().isEmpty()) {
-            afkTeam.unregister();
-        }
     }
 
     public Collection<UUID> getAFKPlayers() {
@@ -408,9 +425,8 @@ public class AFKManager {
     private void removeAFK(Player player, boolean sendMessage) {
         AFKPlayerData data = afkPlayers.remove(player.getUniqueId());
         if (data != null) {
-            if (afkTeam.hasEntry(player.getName())) {
-                afkTeam.removeEntry(player.getName());
-            }
+            removeFromAFKGroup(player.getUniqueId());
+
             removePlayerDisplays(data);
             if (configManager.getBoolean("settings.fast-actionbar-removing")) {
                 player.sendActionBar(Component.text(" "));

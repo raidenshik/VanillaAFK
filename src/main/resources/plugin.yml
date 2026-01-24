@@ -2,7 +2,9 @@ name: VanillaAFK
 version: '1.2'
 main: com.rimzzy.vanillaAFK.VanillaAFK
 api-version: '1.21'
-authors: [ Rimzzy ]
+authors: [Rimzzy, Vavun33]
+depend:
+  - LuckPerms
 description: "AFK плагин с кастомными сообщениями и баблами над головой"
 
 commands:
